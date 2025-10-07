@@ -433,3 +433,34 @@ export default function SignInModal({ children }: SignInModalProps) {
     </>
   );
 }
+
+-----------------
+
+
+Configure ClerkProvider Appearance (Optional)
+
+To customize the username field styling, update `src/app/layout.tsx:30`:
+
+```tsx
+<ClerkProvider
+  appearance={{
+    elements: {
+      // Existing styling...
+      formFieldInput: "rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20"
+    },
+    layout: {
+      showOptionalFields: false, // Hide optional fields to streamline sign-up
+      socialButtonsPlacement: "top"
+    }
+  }}
+  afterSignInUrl="/"
+  afterSignUpUrl="/"
+>
+```
+
+**Current Settings:**
+- `showOptionalFields: false` - Only shows required fields
+- If username is set to **Required** in Clerk Dashboard, it will always appear
+- If username is **Optional**, it will be hidden unless `showOptionalFields: true`
+
+---

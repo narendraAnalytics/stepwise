@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const navLinks = [
   {
@@ -38,6 +42,21 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const { isSignedIn, isLoaded } = useAuth();
+  const [authInProgress, setAuthInProgress] = useState(false);
+
+  // Monitor authentication completion
+  useEffect(() => {
+    if (isLoaded && isSignedIn && authInProgress) {
+      setAuthInProgress(false);
+      toast.success("🎉 Welcome! You're ready to solve math problems!");
+    }
+  }, [isLoaded, isSignedIn, authInProgress]);
+
+  const handleAuthStart = () => {
+    setAuthInProgress(true);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -169,58 +188,129 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* CTA Button */}
+        {/* CTA Button & User Profile */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.5 }}
+          className="flex items-center gap-4"
         >
-          <Link href="/solve">
-            <motion.button
-              className="relative px-6 py-3 rounded-full font-bold overflow-hidden group"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          <SignedOut>
+            <SignInButton
+              mode="modal"
+              forceRedirectUrl="/"
+              signUpForceRedirectUrl="/"
+            >
+              <motion.button
+                onClick={handleAuthStart}
+                className="relative px-6 py-3 rounded-full font-bold overflow-hidden group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                {/* Animated gradient background */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"
+                  animate={{
+                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{
+                    backgroundSize: "200% 200%",
+                  }}
+                />
+
+                {/* Glow effect on hover */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 blur-lg opacity-0"
+                  whileHover={{ opacity: 0.7, scale: 1.1 }}
+                  transition={{ duration: 0.3 }}
+                />
+
+                {/* Button text */}
+                <span className="relative z-10 flex items-center gap-2 font-extrabold">
+                  <motion.span
+                    whileHover={{ rotate: [0, 10, -10, 10, 0] }}
+                    transition={{ duration: 0.5 }}
+                    className="text-xl filter-none"
+                    style={{ WebkitTextFillColor: 'initial' }}
+                  >
+                    🧮
+                  </motion.span>
+                  <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-orange-300 bg-clip-text text-transparent">
+                    Solve Math!
+                  </span>
+                </span>
+              </motion.button>
+            </SignInButton>
+          </SignedOut>
+
+          <SignedIn>
+            <Link href="/solve">
+              <motion.button
+                className="relative px-6 py-3 rounded-full font-bold overflow-hidden group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                {/* Animated gradient background */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"
+                  animate={{
+                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{
+                    backgroundSize: "200% 200%",
+                  }}
+                />
+
+                {/* Glow effect on hover */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 blur-lg opacity-0"
+                  whileHover={{ opacity: 0.7, scale: 1.1 }}
+                  transition={{ duration: 0.3 }}
+                />
+
+                {/* Button text */}
+                <span className="relative z-10 flex items-center gap-2 font-extrabold">
+                  <motion.span
+                    whileHover={{ rotate: [0, 10, -10, 10, 0] }}
+                    transition={{ duration: 0.5 }}
+                    className="text-xl filter-none"
+                    style={{ WebkitTextFillColor: 'initial' }}
+                  >
+                    🧮
+                  </motion.span>
+                  <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-orange-300 bg-clip-text text-transparent">
+                    Solve Math!
+                  </span>
+                </span>
+              </motion.button>
+            </Link>
+
+            {/* User Avatar with Profile & Sign Out */}
+            <motion.div
+              whileHover={{ scale: 1.1 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              {/* Animated gradient background */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                style={{
-                  backgroundSize: "200% 200%",
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "w-10 h-10 border-2 border-purple-500 shadow-lg hover:shadow-purple-500/50 transition-shadow duration-300"
+                  }
                 }}
               />
-
-              {/* Glow effect on hover */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 blur-lg opacity-0"
-                whileHover={{ opacity: 0.7, scale: 1.1 }}
-                transition={{ duration: 0.3 }}
-              />
-
-              {/* Button text */}
-              <span className="relative z-10 flex items-center gap-2 font-extrabold">
-                <motion.span
-                  whileHover={{ rotate: [0, 10, -10, 10, 0] }}
-                  transition={{ duration: 0.5 }}
-                  className="text-xl filter-none"
-                  style={{ WebkitTextFillColor: 'initial' }}
-                >
-                  🧮
-                </motion.span>
-                <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-orange-300 bg-clip-text text-transparent">
-                  Solve Math!
-                </span>
-              </span>
-            </motion.button>
-          </Link>
+            </motion.div>
+          </SignedIn>
         </motion.div>
       </div>
     </nav>
