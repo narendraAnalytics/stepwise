@@ -2,13 +2,64 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import useEmblaCarousel from "embla-carousel-react";
+import { useEffect, useCallback } from "react";
+import Image from "next/image";
 
 export default function HeroSection() {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, []);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const autoplay = setInterval(() => {
+      scrollNext();
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(autoplay);
+  }, [emblaApi, scrollNext]);
+
+  const bannerImages = [
+    "/images/bannerimage.jpg",
+    "/images/bannerImage1.png",
+    "/images/bannerImage2.jpg",
+    "/images/bannerImage3.jpg",
+  ];
+
   return (
-    <section className="min-h-screen flex items-center justify-center px-6 pt-32 pb-20">
-      <div className="max-w-5xl mx-auto text-center">
+    <section className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-20 overflow-hidden">
+      {/* Background Carousel */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <div className="embla w-full h-full overflow-hidden" ref={emblaRef}>
+          <div className="embla__container flex h-full">
+            {bannerImages.map((image, index) => (
+              <div
+                key={index}
+                className="embla__slide flex-[0_0_100%] min-w-0 relative h-full"
+              >
+                <Image
+                  src={image}
+                  alt={`Banner ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  priority={index === 0}
+                  quality={100}
+                />
+                {/* Overlay for better text readability */}
+                <div className="absolute inset-0 bg-white/30 dark:bg-black/50 backdrop-blur-[2px]" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto text-center relative z-20">
         {/* Main Heading */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -23,7 +74,7 @@ export default function HeroSection() {
               The Right Way
             </span>
           </h1>
-        </motion.div>
+        </motion.div> */}
 
         {/* Subheading */}
         <motion.p
@@ -135,40 +186,6 @@ export default function HeroSection() {
             </motion.button>
           </Link>
         </motion.div>
-
-        {/* Floating Math Symbols Animation */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-          {["∑", "π", "∫", "√", "÷", "×", "+", "="].map((symbol, index) => (
-            <motion.div
-              key={index}
-              className="absolute text-6xl font-bold bg-gradient-to-r from-purple-300 via-pink-300 to-blue-300 bg-clip-text text-transparent opacity-10"
-              initial={{
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-              }}
-              animate={{
-                y: [
-                  Math.random() * window.innerHeight,
-                  Math.random() * window.innerHeight,
-                  Math.random() * window.innerHeight,
-                ],
-                x: [
-                  Math.random() * window.innerWidth,
-                  Math.random() * window.innerWidth,
-                  Math.random() * window.innerWidth,
-                ],
-                rotate: [0, 360],
-              }}
-              transition={{
-                duration: 20 + index * 2,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            >
-              {symbol}
-            </motion.div>
-          ))}
-        </div>
       </div>
     </section>
   );
