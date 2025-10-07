@@ -81,13 +81,17 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-4 max-w-3xl mx-auto leading-relaxed"
+          className="text-xl md:text-2xl mb-4 max-w-3xl mx-auto leading-relaxed"
         >
-          Snap a photo of any math problem and get instant,{" "}
+          <span className="font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+            Snap a photo of any math problem and get instant,{" "}
+          </span>
           <span className="font-bold bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 bg-clip-text text-transparent">
             step-by-step explanations
-          </span>{" "}
-          that teach concepts, not just answers.
+          </span>
+          <span className="font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+            {" "}that teach concepts, not just answers.
+          </span>
         </motion.p>
 
         {/* Additional tagline */}
@@ -95,17 +99,19 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-lg text-gray-600 dark:text-gray-400 mb-12"
+          className="text-lg mb-12"
         >
-          Perfect for students, parents, and lifelong learners ✨
+          <span className="font-bold bg-gradient-to-r from-green-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
+            Perfect for students, parents, and lifelong learners ✨
+          </span>
         </motion.p>
 
-        {/* CTA Buttons */}
+        {/* CTA Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-6"
+          className="flex items-center justify-center"
         >
           {/* Primary CTA */}
           <Link href="/solve">
@@ -151,37 +157,6 @@ export default function HeroSection() {
                 <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-orange-300 bg-clip-text text-transparent">
                   Start Solving Now
                 </span>
-              </span>
-            </motion.button>
-          </Link>
-
-          {/* Secondary CTA */}
-          <Link href="/about">
-            <motion.button
-              className="relative px-10 py-5 rounded-full font-bold text-lg overflow-hidden group border-2 border-transparent"
-              whileHover={{ scale: 1.05, y: -3 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              {/* Background */}
-              <motion.div
-                className="absolute inset-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
-                whileHover={{
-                  background:
-                    "linear-gradient(to right, rgba(255,255,255,0.8), rgba(255,255,255,0.6))",
-                }}
-              />
-
-              {/* Border gradient on hover */}
-              <motion.div
-                className="absolute inset-0 rounded-full bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 opacity-0"
-                whileHover={{ opacity: 1 }}
-                style={{ padding: "2px", zIndex: -1 }}
-              />
-
-              {/* Button text */}
-              <span className="relative z-10 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent font-extrabold">
-                Learn More
               </span>
             </motion.button>
           </Link>
