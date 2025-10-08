@@ -18,6 +18,17 @@ const mathSymbols = [
   { symbol: "∞", label: "Infinity" },
   { symbol: "(", label: "Open" },
   { symbol: ")", label: "Close" },
+  { symbol: "[", label: "L-Bracket" },
+  { symbol: "]", label: "R-Bracket" },
+  { symbol: ",", label: "Comma" },
+  { symbol: "∫", label: "Integral" },
+  { symbol: "i", label: "Vector i" },
+  { symbol: "j", label: "Vector j" },
+  { symbol: "k", label: "Vector k" },
+  { symbol: "→", label: "Arrow" },
+  { symbol: "∂", label: "Partial" },
+  { symbol: "⁻¹", label: "Inverse" },
+  { symbol: "ᵀ", label: "Transpose" },
 ];
 
 export default function TextInput() {
@@ -150,7 +161,12 @@ export default function TextInput() {
           <textarea
             value={problem}
             onChange={handleInputChange}
-            placeholder="Type your math problem here... (e.g., 2x + 5 = 15)"
+            placeholder="Type your math problem(s) here...
+You can solve multiple problems at once!
+Examples:
+1. 2x + 5 = 15
+2. x² + 3x + 2 = 0
+3. √(16) + 2³"
             className="w-full h-48 p-6 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-2xl border-2 border-orange-300/50 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 outline-none transition-all duration-300 resize-none text-lg font-medium text-gray-800 dark:text-gray-200 placeholder:text-gray-400"
             style={{ fontFamily: "monospace" }}
           />
@@ -224,14 +240,53 @@ export default function TextInput() {
             transition={{ duration: 0.5 }}
             className="mt-8 bg-gradient-to-br from-cyan-500/10 to-teal-500/10 backdrop-blur-lg rounded-3xl p-8 border border-cyan-200/30"
           >
-            <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+            <h3 className="text-3xl font-bold mb-6 bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
               <span>✨</span>
               Solution
             </h3>
-            <div className="prose prose-lg dark:prose-invert max-w-none">
-              <pre className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 font-sans">
-                {solution}
-              </pre>
+            <div className="space-y-6">
+              {solution.split('\n').map((line, index) => {
+                // Clean up markdown formatting
+                const cleanLine = line.replace(/\*\*/g, '');
+
+                // Check if line is a problem title
+                if (cleanLine.match(/^Problem \d+:/i)) {
+                  return (
+                    <h4 key={index} className="text-2xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent mt-8 first:mt-0">
+                      {cleanLine}
+                    </h4>
+                  );
+                }
+
+                // Check if line is a section header (Problem Statement, Step-by-Step Solution, etc.)
+                if (cleanLine.match(/^(Problem Statement|Step-by-Step Solution|Final Answer|Quick Tip|Problem Number & Statement):/i)) {
+                  return (
+                    <h5 key={index} className="text-xl font-bold bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent mt-4">
+                      {cleanLine}
+                    </h5>
+                  );
+                }
+
+                // Check if line is a step (starts with Step or number)
+                if (cleanLine.match(/^(Step \d+|^\d+\.)/i)) {
+                  return (
+                    <p key={index} className="text-lg font-semibold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent ml-4">
+                      {cleanLine}
+                    </p>
+                  );
+                }
+
+                // Regular text
+                if (cleanLine.trim()) {
+                  return (
+                    <p key={index} className="text-base text-gray-700 dark:text-gray-300 leading-relaxed ml-4">
+                      {cleanLine}
+                    </p>
+                  );
+                }
+
+                return null;
+              })}
             </div>
           </motion.div>
         )}
@@ -246,7 +301,7 @@ export default function TextInput() {
           <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-cyan-500" />
             <span>
-              <span className="font-bold">Tip:</span> Use standard notation like 2x, 3y, or x², and don&apos;t forget parentheses for complex expressions!
+              <span className="font-bold">Tip:</span> You can solve multiple problems at once! Number them (1., 2., 3.) or separate them clearly. Use standard notation like 2x, 3y, or x², and don&apos;t forget parentheses for complex expressions!
             </span>
           </p>
         </motion.div>

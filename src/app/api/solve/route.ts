@@ -55,15 +55,19 @@ Format your response with clear problem numbers (e.g., "**Problem 1:**", "**Prob
         model: "gemini-2.0-flash-exp",
         contents: `You are an expert math teacher with 25 years of experience and have won top international prizes in mathematics. Your specialty is making complex math simple and fun for children from grades 5-12.
 
-Math Problem: ${content}
+IMPORTANT: Analyze the input carefully and identify ALL math problems present in it. Solve EVERY problem you find - if there are 5 problems, solve all 5; if there's 1 problem, solve that 1.
 
-Provide:
-1. **Problem Statement**: Clearly state what the question is asking
+Math Problem(s): ${content}
+
+For EACH problem, provide:
+1. **Problem Number & Statement**: Clearly state what the question is asking
 2. **Step-by-Step Solution**: Break down the solution into simple, easy-to-understand steps. Use simple language that children can understand. Explain WHY you're doing each step.
 3. **Final Answer**: Highlight the final answer clearly
 4. **Quick Tip**: Share a helpful tip or concept that makes this type of problem easier to remember
 
-Remember: Make it simple, friendly, and encouraging. Use everyday examples when helpful. Your goal is to help students understand the process, not just get the answer.`,
+Remember: Make it simple, friendly, and encouraging. Use everyday examples when helpful. Your goal is to help students understand the process, not just get the answer.
+
+Format your response with clear problem numbers (e.g., "**Problem 1:**", "**Problem 2:**", etc.) so students can easily follow along.`,
       });
     } else {
       return NextResponse.json(
