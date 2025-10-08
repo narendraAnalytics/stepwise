@@ -11,6 +11,9 @@ export default function ImageUpload() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [fileName, setFileName] = useState<string>("");
+  const [mimeType, setMimeType] = useState<string>("");
+  const [isSolving, setIsSolving] = useState(false);
+  const [solution, setSolution] = useState<string | null>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -44,6 +47,7 @@ export default function ImageUpload() {
 
     setIsUploading(true);
     setFileName(file.name);
+    setMimeType(file.type);
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -76,13 +80,46 @@ export default function ImageUpload() {
   const handleRemoveImage = () => {
     setUploadedImage(null);
     setFileName("");
+    setMimeType("");
+    setSolution(null);
     toast.info("Image removed");
   };
 
-  const handleSolve = () => {
-    if (uploadedImage) {
-      toast.success("Processing your math problem... 🧮");
-      // TODO: Implement actual solving logic
+  const handleSolve = async () => {
+    if (!uploadedImage) return;
+
+    setIsSolving(true);
+    setSolution(null);
+
+    try {
+      // Extract base64 data from data URL
+      const base64Data = uploadedImage.split(',')[1];
+
+      const response = await fetch('/api/solve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'image',
+          content: base64Data,
+          mimeType: mimeType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSolution(data.solution);
+        toast.success("Problem solved! 🎉");
+      } else {
+        toast.error(data.error || "Failed to solve problem");
+      }
+    } catch (error) {
+      console.error('Error solving problem:', error);
+      toast.error("An error occurred while solving the problem");
+    } finally {
+      setIsSolving(false);
     }
   };
 
@@ -209,6 +246,7 @@ export default function ImageUpload() {
 
               <motion.button
                 onClick={handleSolve}
+                disabled={isSolving}
                 className="relative w-full px-10 py-5 rounded-full font-bold text-lg overflow-hidden group"
                 whileHover={{ scale: 1.05, y: -3 }}
                 whileTap={{ scale: 0.95 }}
@@ -236,12 +274,82 @@ export default function ImageUpload() {
                 />
 
                 <span className="relative z-10 flex items-center justify-center gap-3 font-extrabold">
-                  <span className="text-2xl">🧮</span>
-                  <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-orange-300 bg-clip-text text-transparent">
-                    Solve This Problem!
-                  </span>
+                  {isSolving ? (
+                    <>
+                      <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-orange-300 bg-clip-text text-transparent">
+                        Solving...
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-2xl">🧮</span>
+                      <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-orange-300 bg-clip-text text-transparent">
+                        Solve This Problem!
+                      </span>
+                    </>
+                  )}
                 </span>
               </motion.button>
+
+              {/* Solution Display */}
+              {solution && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="mt-8 bg-gradient-to-br from-cyan-500/10 to-teal-500/10 backdrop-blur-lg rounded-3xl p-8 border border-cyan-200/30"
+                >
+                  <h3 className="text-3xl font-bold mb-6 bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+                    <span>✨</span>
+                    Solution
+                  </h3>
+                  <div className="space-y-6">
+                    {solution.split('\n').map((line, index) => {
+                      // Clean up markdown formatting
+                      const cleanLine = line.replace(/\*\*/g, '');
+
+                      // Check if line is a problem title
+                      if (cleanLine.match(/^Problem \d+:/i)) {
+                        return (
+                          <h4 key={index} className="text-2xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent mt-8 first:mt-0">
+                            {cleanLine}
+                          </h4>
+                        );
+                      }
+
+                      // Check if line is a section header (Problem Statement, Step-by-Step Solution, etc.)
+                      if (cleanLine.match(/^(Problem Statement|Step-by-Step Solution|Final Answer|Quick Tip|Problem Number & Statement):/i)) {
+                        return (
+                          <h5 key={index} className="text-xl font-bold bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent mt-4">
+                            {cleanLine}
+                          </h5>
+                        );
+                      }
+
+                      // Check if line is a step (starts with Step or number)
+                      if (cleanLine.match(/^(Step \d+|^\d+\.)/i)) {
+                        return (
+                          <p key={index} className="text-lg font-semibold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent ml-4">
+                            {cleanLine}
+                          </p>
+                        );
+                      }
+
+                      // Regular text
+                      if (cleanLine.trim()) {
+                        return (
+                          <p key={index} className="text-base text-gray-700 dark:text-gray-300 leading-relaxed ml-4">
+                            {cleanLine}
+                          </p>
+                        );
+                      }
+
+                      return null;
+                    })}
+                  </div>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         )}

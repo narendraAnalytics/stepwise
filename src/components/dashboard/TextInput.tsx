@@ -23,6 +23,8 @@ const mathSymbols = [
 export default function TextInput() {
   const [problem, setProblem] = useState("");
   const [charCount, setCharCount] = useState(0);
+  const [isSolving, setIsSolving] = useState(false);
+  const [solution, setSolution] = useState<string | null>(null);
   const maxChars = 500;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -40,19 +42,47 @@ export default function TextInput() {
     }
   };
 
-  const handleSolve = () => {
+  const handleSolve = async () => {
     if (problem.trim().length === 0) {
       toast.error("Please enter a math problem first!");
       return;
     }
 
-    toast.success("Processing your math problem... 🧮");
-    // TODO: Implement actual solving logic
+    setIsSolving(true);
+    setSolution(null);
+
+    try {
+      const response = await fetch('/api/solve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'text',
+          content: problem,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSolution(data.solution);
+        toast.success("Problem solved! 🎉");
+      } else {
+        toast.error(data.error || "Failed to solve problem");
+      }
+    } catch (error) {
+      console.error('Error solving problem:', error);
+      toast.error("An error occurred while solving the problem");
+    } finally {
+      setIsSolving(false);
+    }
   };
 
   const handleClear = () => {
     setProblem("");
     setCharCount(0);
+    setSolution(null);
     toast.info("Problem cleared");
   };
 
@@ -143,7 +173,7 @@ export default function TextInput() {
             whileHover={{ scale: 1.05, y: -3 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            disabled={problem.trim().length === 0}
+            disabled={problem.trim().length === 0 || isSolving}
           >
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500"
@@ -167,13 +197,44 @@ export default function TextInput() {
             />
 
             <span className="relative z-10 flex items-center justify-center gap-3 font-extrabold">
-              <Send className="w-6 h-6" />
-              <span className="bg-gradient-to-r from-white via-yellow-100 to-white bg-clip-text text-transparent">
-                Solve This Problem!
-              </span>
+              {isSolving ? (
+                <>
+                  <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span className="bg-gradient-to-r from-white via-yellow-100 to-white bg-clip-text text-transparent">
+                    Solving...
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-6 h-6" />
+                  <span className="bg-gradient-to-r from-white via-yellow-100 to-white bg-clip-text text-transparent">
+                    Solve This Problem!
+                  </span>
+                </>
+              )}
             </span>
           </motion.button>
         </div>
+
+        {/* Solution Display */}
+        {solution && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mt-8 bg-gradient-to-br from-cyan-500/10 to-teal-500/10 backdrop-blur-lg rounded-3xl p-8 border border-cyan-200/30"
+          >
+            <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+              <span>✨</span>
+              Solution
+            </h3>
+            <div className="prose prose-lg dark:prose-invert max-w-none">
+              <pre className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 font-sans">
+                {solution}
+              </pre>
+            </div>
+          </motion.div>
+        )}
 
         {/* Helper Text */}
         <motion.div
