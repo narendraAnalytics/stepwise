@@ -35,9 +35,11 @@ IMPORTANT: Analyze this image carefully and identify ALL math problems present i
 
 For EACH problem, provide:
 1. **Problem Number & Statement**: Clearly state what the question is asking
-2. **Step-by-Step Solution**: Break down the solution into simple, easy-to-understand steps. Use simple language that children can understand. Explain WHY you're doing each step.
-3. **Final Answer**: Highlight the final answer clearly
-4. **Quick Tip**: Share a helpful tip or concept that makes this type of problem easier to remember
+2. **Key Concept**: Explain the main mathematical concept or formula being used
+3. **Step-by-Step Solution**: Break down the solution into simple, easy-to-understand steps. Use simple language that children can understand. Explain WHY you're doing each step.
+4. **Final Answer**: Highlight the final answer clearly
+5. **Quick Tip**: Share a helpful tip or concept that makes this type of problem easier to remember
+6. **Practice Tip**: Provide a practical tip or similar problem type for practice
 
 Remember: Make it simple, friendly, and encouraging. Use everyday examples when helpful. Your goal is to help students understand the process, not just get the answer.
 
@@ -61,9 +63,11 @@ Math Problem(s): ${content}
 
 For EACH problem, provide:
 1. **Problem Number & Statement**: Clearly state what the question is asking
-2. **Step-by-Step Solution**: Break down the solution into simple, easy-to-understand steps. Use simple language that children can understand. Explain WHY you're doing each step.
-3. **Final Answer**: Highlight the final answer clearly
-4. **Quick Tip**: Share a helpful tip or concept that makes this type of problem easier to remember
+2. **Key Concept**: Explain the main mathematical concept or formula being used
+3. **Step-by-Step Solution**: Break down the solution into simple, easy-to-understand steps. Use simple language that children can understand. Explain WHY you're doing each step.
+4. **Final Answer**: Highlight the final answer clearly
+5. **Quick Tip**: Share a helpful tip or concept that makes this type of problem easier to remember
+6. **Practice Tip**: Provide a practical tip or similar problem type for practice
 
 Remember: Make it simple, friendly, and encouraging. Use everyday examples when helpful. Your goal is to help students understand the process, not just get the answer.
 

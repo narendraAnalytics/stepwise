@@ -10,6 +10,21 @@ import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
+const AnimatedMathSymbols = () => {
+  const mathSymbols = ['∑', '∫', 'π', '√', '∞', '∂', 'α', 'β', 'θ', '≈', '≠', '≤', '≥', '×', '÷', '±'];
+  const [currentSymbol, setCurrentSymbol] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSymbol((prev) => (prev + 1) % mathSymbols.length);
+    }, 800); // Change symbol every 800ms for typewriter effect
+
+    return () => clearInterval(interval);
+  }, [mathSymbols.length]);
+
+  return <span className="inline-block">{mathSymbols[currentSymbol]}</span>;
+};
+
 export default function HeroSection() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, []);
   const { isSignedIn, isLoaded } = useAuth();
@@ -79,7 +94,7 @@ export default function HeroSection() {
                   quality={95}
                 />
                 {/* Overlay for better text readability */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/70 via-purple-900/60 to-indigo-900/70" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-purple-900/70 to-indigo-900/80" />
               </div>
             ))}
           </div>
@@ -138,7 +153,7 @@ export default function HeroSection() {
           className="text-lg mb-12"
         >
           <span className="font-bold bg-gradient-to-r from-green-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
-            Perfect for students, parents, and lifelong learners ✨
+            Perfect for students, parents, and lifelong learners <AnimatedMathSymbols />
           </span>
         </motion.p>
 

@@ -246,8 +246,8 @@ Examples:
             </h3>
             <div className="space-y-6">
               {solution.split('\n').map((line, index) => {
-                // Clean up markdown formatting
-                const cleanLine = line.replace(/\*\*/g, '');
+                // Clean up markdown formatting (bold ** and italic *)
+                const cleanLine = line.replace(/\*\*/g, '').replace(/\*/g, '');
 
                 // Check if line is a problem title
                 if (cleanLine.match(/^Problem \d+:/i)) {
@@ -258,8 +258,17 @@ Examples:
                   );
                 }
 
+                // Check if line is Final Answer (special bright gradient)
+                if (cleanLine.match(/^Final Answer:/i)) {
+                  return (
+                    <h5 key={index} className="text-xl font-bold bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 bg-clip-text text-transparent mt-4">
+                      {cleanLine}
+                    </h5>
+                  );
+                }
+
                 // Check if line is a section header (Problem Statement, Step-by-Step Solution, etc.)
-                if (cleanLine.match(/^(Problem Statement|Step-by-Step Solution|Final Answer|Quick Tip|Problem Number & Statement):/i)) {
+                if (cleanLine.match(/^(Problem Statement|Step-by-Step Solution|Quick Tip|Problem Number & Statement|Key Concept|Practice Tip):/i)) {
                   return (
                     <h5 key={index} className="text-xl font-bold bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent mt-4">
                       {cleanLine}
