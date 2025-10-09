@@ -7,12 +7,25 @@ import { redirect } from "next/navigation";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import ImageUpload from "@/components/dashboard/ImageUpload";
 import TextInput from "@/components/dashboard/TextInput";
+import SavedSolutionsSidebar from "@/components/dashboard/SavedSolutionsSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface SavedSolution {
+  id: number;
+  problemNumber: number;
+  solution: string;
+  problemType: string;
+  problemContent: string;
+  mimeType: string | null;
+  createdAt: string;
+}
 
 export default function SolveDashboard() {
   const { isSignedIn, isLoaded } = useAuth();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("image");
+  const [selectedSolution, setSelectedSolution] = useState<SavedSolution | null>(null);
+  const [refreshSidebar, setRefreshSidebar] = useState(0);
 
   // Redirect if not signed in
   if (isLoaded && !isSignedIn) {
@@ -32,9 +45,23 @@ export default function SolveDashboard() {
     );
   }
 
+  const handleSolutionSelect = (solution: SavedSolution) => {
+    setSelectedSolution(solution);
+  };
+
+  const handleSolutionSaved = () => {
+    setRefreshSidebar(prev => prev + 1);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-gray-900 dark:via-slate-900 dark:to-zinc-900">
       <DashboardNavbar />
+
+      {/* Saved Solutions Sidebar */}
+      <SavedSolutionsSidebar
+        onSelectSolution={handleSolutionSelect}
+        refreshTrigger={refreshSidebar}
+      />
 
       {/* Main Dashboard Content */}
       <div className="pt-32 pb-20 px-6">
@@ -82,11 +109,17 @@ export default function SolveDashboard() {
               </TabsList>
 
               <TabsContent value="image" className="mt-8">
-                <ImageUpload />
+                <ImageUpload
+                  onSolutionSaved={handleSolutionSaved}
+                  selectedSolution={selectedSolution}
+                />
               </TabsContent>
 
               <TabsContent value="text" className="mt-8">
-                <TextInput />
+                <TextInput
+                  onSolutionSaved={handleSolutionSaved}
+                  selectedSolution={selectedSolution}
+                />
               </TabsContent>
             </Tabs>
           </motion.div>

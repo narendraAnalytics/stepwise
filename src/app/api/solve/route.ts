@@ -1,8 +1,22 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { db } from "@/db";
+import { solutionsTable, usersTable } from "@/db/schema";
+import { eq, count } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   try {
+    // Get authenticated user
+    const { userId: clerkId } = await auth();
+
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { type, content, mimeType } = body;
 
@@ -82,9 +96,48 @@ Format your response with clear problem numbers (e.g., "**Problem 1:**", "**Prob
 
     const solution = response.text;
 
+    // Get user from database
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.clerkId, clerkId))
+      .limit(1);
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Count existing solutions for this user to get next problem number
+    const [solutionCount] = await db
+      .select({ count: count() })
+      .from(solutionsTable)
+      .where(eq(solutionsTable.clerkId, clerkId));
+
+    const problemNumber = (solutionCount?.count || 0) + 1;
+
+    // Auto-save solution to database
+    const solutionData: any = {
+      userId: user.id,
+      clerkId: clerkId,
+      problemNumber: problemNumber,
+      problemType: type,
+      problemContent: content,
+      solution: solution,
+    };
+
+    if (type === "image" && mimeType) {
+      solutionData.mimeType = mimeType;
+    }
+
+    await db.insert(solutionsTable).values(solutionData);
+
     return NextResponse.json({
       success: true,
       solution,
+      problemNumber,
     });
   } catch (error) {
     console.error("Error solving math problem:", error);
