@@ -53,6 +53,10 @@ export default function SolveDashboard() {
     setRefreshSidebar(prev => prev + 1);
   };
 
+  const handleBackToDashboard = () => {
+    setSelectedSolution(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-gray-900 dark:via-slate-900 dark:to-zinc-900">
       <DashboardNavbar />
@@ -112,6 +116,7 @@ export default function SolveDashboard() {
                 <ImageUpload
                   onSolutionSaved={handleSolutionSaved}
                   selectedSolution={selectedSolution}
+                  onBackToDashboard={handleBackToDashboard}
                 />
               </TabsContent>
 
@@ -119,6 +124,7 @@ export default function SolveDashboard() {
                 <TextInput
                   onSolutionSaved={handleSolutionSaved}
                   selectedSolution={selectedSolution}
+                  onBackToDashboard={handleBackToDashboard}
                 />
               </TabsContent>
             </Tabs>

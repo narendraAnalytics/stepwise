@@ -19,9 +19,10 @@ interface SavedSolution {
 interface ImageUploadProps {
   onSolutionSaved?: () => void;
   selectedSolution?: SavedSolution | null;
+  onBackToDashboard?: () => void;
 }
 
-export default function ImageUpload({ onSolutionSaved, selectedSolution }: ImageUploadProps) {
+export default function ImageUpload({ onSolutionSaved, selectedSolution, onBackToDashboard }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -35,12 +36,17 @@ export default function ImageUpload({ onSolutionSaved, selectedSolution }: Image
   // Load selected solution from sidebar
   useEffect(() => {
     if (selectedSolution && selectedSolution.problemType === "image") {
-      setSolution(selectedSolution.solution);
-      setProblemNumber(selectedSolution.problemNumber);
-      setShowSolution(true);
+      // Reset view first to ensure re-render
+      setShowSolution(false);
+      // Use setTimeout to ensure state update completes before showing solution
+      setTimeout(() => {
+        setSolution(selectedSolution.solution);
+        setProblemNumber(selectedSolution.problemNumber);
+        setShowSolution(true);
+      }, 0);
       // Don't load the image content for saved solutions (optional)
     }
-  }, [selectedSolution?.id, selectedSolution?.problemNumber]);
+  }, [selectedSolution?.id, selectedSolution?.problemNumber, selectedSolution?.solution]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -121,6 +127,10 @@ export default function ImageUpload({ onSolutionSaved, selectedSolution }: Image
     setFileName("");
     setMimeType("");
     setProblemNumber(null);
+    // Notify parent to clear selected solution
+    if (onBackToDashboard) {
+      onBackToDashboard();
+    }
   };
 
   const handleSolve = async () => {

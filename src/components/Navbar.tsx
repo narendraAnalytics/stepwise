@@ -7,6 +7,7 @@ import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const navLinks = [
   {
@@ -44,6 +45,8 @@ const navLinks = [
 export default function Navbar() {
   const { isSignedIn, isLoaded } = useAuth();
   const [authInProgress, setAuthInProgress] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const router = useRouter();
 
   // Monitor authentication completion
   useEffect(() => {
@@ -55,6 +58,13 @@ export default function Navbar() {
 
   const handleAuthStart = () => {
     setAuthInProgress(true);
+  };
+
+  const handleRedirect = () => {
+    setIsRedirecting(true);
+    setTimeout(() => {
+      router.push("/solve");
+    }, 800);
   };
 
   return (
@@ -250,52 +260,59 @@ export default function Navbar() {
           </SignedOut>
 
           <SignedIn>
-            <Link href="/solve">
-              <motion.button
-                className="relative px-6 py-3 rounded-full font-bold overflow-hidden group"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                {/* Animated gradient background */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"
-                  animate={{
-                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                  style={{
-                    backgroundSize: "200% 200%",
-                  }}
-                />
+            <motion.button
+              onClick={handleRedirect}
+              className="relative px-6 py-3 rounded-full font-bold overflow-hidden group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              disabled={isRedirecting}
+            >
+              {/* Animated gradient background */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                style={{
+                  backgroundSize: "200% 200%",
+                }}
+              />
 
-                {/* Glow effect on hover */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 blur-lg opacity-0"
-                  whileHover={{ opacity: 0.7, scale: 1.1 }}
-                  transition={{ duration: 0.3 }}
-                />
+              {/* Glow effect on hover */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 blur-lg opacity-0"
+                whileHover={{ opacity: 0.7, scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+              />
 
-                {/* Button text */}
-                <span className="relative z-10 flex items-center gap-2 font-extrabold">
-                  <motion.span
-                    whileHover={{ rotate: [0, 10, -10, 10, 0] }}
-                    transition={{ duration: 0.5 }}
-                    className="text-xl filter-none"
-                    style={{ WebkitTextFillColor: 'initial' }}
-                  >
-                    🧮
-                  </motion.span>
-                  <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-orange-300 bg-clip-text text-transparent">
-                    Solve Math!
-                  </span>
+              {/* Button text */}
+              <span className="relative z-10 flex items-center gap-2 font-extrabold">
+                <motion.span
+                  animate={isRedirecting ? {
+                    rotate: 360,
+                    scale: [1, 1.3, 1]
+                  } : {}}
+                  transition={isRedirecting ? {
+                    rotate: { duration: 0.6, repeat: Infinity, ease: "linear" },
+                    scale: { duration: 0.6, repeat: Infinity, ease: "easeInOut" }
+                  } : { duration: 0.5 }}
+                  whileHover={!isRedirecting ? { rotate: [0, 10, -10, 10, 0] } : {}}
+                  className="text-xl filter-none"
+                  style={{ WebkitTextFillColor: 'initial' }}
+                >
+                  🧮
+                </motion.span>
+                <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-orange-300 bg-clip-text text-transparent">
+                  {isRedirecting ? "Loading..." : "Solve Math!"}
                 </span>
-              </motion.button>
-            </Link>
+              </span>
+            </motion.button>
 
             {/* User Avatar with Profile & Sign Out */}
             <motion.div

@@ -99,7 +99,7 @@ export default function SavedSolutionsSidebar({ onSelectSolution, refreshTrigger
       </div>
 
       {/* Solutions List */}
-      <div className="overflow-y-auto h-full pb-24 px-3 pt-4">
+      <div className="overflow-y-auto h-full pb-24 px-2 pt-4">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center gap-2 py-8">
             <div className="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
@@ -113,13 +113,13 @@ export default function SavedSolutionsSidebar({ onSelectSolution, refreshTrigger
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="h-full pb-24 px-2 pt-4">
             {solutions.map((solution, index) => (
               <motion.button
                 key={solution.id}
                 onClick={() => handleSolutionClick(solution)}
                 className={`
-                  relative w-full aspect-square rounded-2xl font-bold text-xl
+                  relative w-full aspect-square rounded-xl font-bold text-sm mb-2
                   transition-all duration-300 shadow-lg hover:shadow-2xl
                   ${selectedNumber === solution.problemNumber
                     ? 'bg-gradient-to-br from-purple-500 via-pink-500 to-fuchsia-500 text-white scale-110'
@@ -135,7 +135,7 @@ export default function SavedSolutionsSidebar({ onSelectSolution, refreshTrigger
                 <span className="relative z-10">{solution.problemNumber}</span>
                 {selectedNumber === solution.problemNumber && (
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-yellow-400/30 to-orange-400/30 rounded-2xl"
+                    className="absolute inset-0 bg-gradient-to-br from-yellow-400/30 to-orange-400/30 rounded-xl"
                     animate={{
                       scale: [1, 1.2, 1],
                       opacity: [0.5, 0.8, 0.5],

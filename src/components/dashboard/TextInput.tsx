@@ -18,6 +18,7 @@ interface SavedSolution {
 interface TextInputProps {
   onSolutionSaved?: () => void;
   selectedSolution?: SavedSolution | null;
+  onBackToDashboard?: () => void;
 }
 
 const mathSymbols = [
@@ -25,6 +26,7 @@ const mathSymbols = [
   { symbol: "-", label: "Minus" },
   { symbol: "×", label: "Multiply" },
   { symbol: "÷", label: "Divide" },
+  { symbol: "/", label: "Fraction" },
   { symbol: "=", label: "Equals" },
   { symbol: "²", label: "Square" },
   { symbol: "³", label: "Cube" },
@@ -44,9 +46,11 @@ const mathSymbols = [
   { symbol: "∂", label: "Partial" },
   { symbol: "⁻¹", label: "Inverse" },
   { symbol: "ᵀ", label: "Transpose" },
+  { symbol: "ₙ", label: "Subscript n" },
+  { symbol: "°", label: "Degree" },
 ];
 
-export default function TextInput({ onSolutionSaved, selectedSolution }: TextInputProps) {
+export default function TextInput({ onSolutionSaved, selectedSolution, onBackToDashboard }: TextInputProps) {
   const [problem, setProblem] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [isSolving, setIsSolving] = useState(false);
@@ -58,13 +62,18 @@ export default function TextInput({ onSolutionSaved, selectedSolution }: TextInp
   // Load selected solution from sidebar
   useEffect(() => {
     if (selectedSolution && selectedSolution.problemType === "text") {
-      setSolution(selectedSolution.solution);
-      setProblem(selectedSolution.problemContent);
-      setProblemNumber(selectedSolution.problemNumber);
-      setCharCount(selectedSolution.problemContent.length);
-      setShowSolution(true);
+      // Reset view first to ensure re-render
+      setShowSolution(false);
+      // Use setTimeout to ensure state update completes before showing solution
+      setTimeout(() => {
+        setSolution(selectedSolution.solution);
+        setProblem(selectedSolution.problemContent);
+        setProblemNumber(selectedSolution.problemNumber);
+        setCharCount(selectedSolution.problemContent.length);
+        setShowSolution(true);
+      }, 0);
     }
-  }, [selectedSolution?.id, selectedSolution?.problemNumber]);
+  }, [selectedSolution?.id, selectedSolution?.problemNumber, selectedSolution?.solution]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -139,6 +148,10 @@ export default function TextInput({ onSolutionSaved, selectedSolution }: TextInp
     setProblem("");
     setCharCount(0);
     setProblemNumber(null);
+    // Notify parent to clear selected solution
+    if (onBackToDashboard) {
+      onBackToDashboard();
+    }
   };
 
   return (
