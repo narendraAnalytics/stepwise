@@ -46,7 +46,25 @@ export default function Navbar() {
   const { isSignedIn, isLoaded } = useAuth();
   const [authInProgress, setAuthInProgress] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [userPlan, setUserPlan] = useState<"free" | "pro" | "max">("free");
   const router = useRouter();
+
+  // Fetch user's plan
+  useEffect(() => {
+    const fetchUserPlan = async () => {
+      if (isSignedIn) {
+        try {
+          const response = await fetch("/api/user/plan");
+          const data = await response.json();
+          setUserPlan(data.plan);
+        } catch (error) {
+          console.error("Error fetching user plan:", error);
+        }
+      }
+    };
+
+    fetchUserPlan();
+  }, [isSignedIn]);
 
   // Monitor authentication completion
   useEffect(() => {
@@ -66,6 +84,40 @@ export default function Navbar() {
       router.push("/solve");
     }, 800);
   };
+
+  const getPlanConfig = (plan: "free" | "pro" | "max") => {
+    switch (plan) {
+      case "max":
+        return {
+          name: "Max",
+          icon: "👑",
+          gradient: "from-cyan-500 via-blue-500 to-indigo-500",
+          bgGradient: "from-cyan-500 via-blue-500 to-indigo-500",
+          borderGradient: "from-cyan-400 via-blue-400 to-indigo-400",
+          textColor: "text-white",
+        };
+      case "pro":
+        return {
+          name: "Pro",
+          icon: "✨",
+          gradient: "from-purple-500 via-pink-500 to-fuchsia-500",
+          bgGradient: "from-purple-500 via-pink-500 to-fuchsia-500",
+          borderGradient: "from-purple-400 via-pink-400 to-fuchsia-400",
+          textColor: "text-white",
+        };
+      default:
+        return {
+          name: "Free",
+          icon: "🆓",
+          gradient: "from-slate-600 via-gray-600 to-zinc-600",
+          bgGradient: "from-slate-600 via-gray-600 to-zinc-600",
+          borderGradient: "from-slate-500 via-gray-500 to-zinc-500",
+          textColor: "bg-gradient-to-r from-gray-100 via-slate-100 to-zinc-100 bg-clip-text text-transparent",
+        };
+    }
+  };
+
+  const planConfig = getPlanConfig(userPlan);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6">
@@ -121,6 +173,49 @@ export default function Navbar() {
             </motion.div>
           </motion.div>
         </Link>
+
+        {/* Plan Status Badge */}
+        {isSignedIn && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="relative group"
+          >
+            <motion.div
+              className={`relative px-5 py-2.5 rounded-full bg-gradient-to-r ${planConfig.bgGradient} shadow-lg`}
+              whileHover={{ scale: 1.1, y: -2 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              {/* Glow effect on hover */}
+              <motion.div
+                className={`absolute -inset-1 bg-gradient-to-r ${planConfig.borderGradient} rounded-full opacity-0 blur-xl`}
+                whileHover={{ opacity: 0.8 }}
+                transition={{ duration: 0.3 }}
+              />
+
+              {/* Badge content */}
+              <div className="relative flex items-center gap-2">
+                <motion.span
+                  className="text-xl"
+                  animate={{
+                    rotate: [0, 10, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                >
+                  {planConfig.icon}
+                </motion.span>
+                <span className={`font-extrabold text-base drop-shadow-lg ${planConfig.textColor}`}>
+                  {planConfig.name} Plan
+                </span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
 
         {/* Navigation Links */}
         <div className="flex items-center gap-8">

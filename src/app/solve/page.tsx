@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
@@ -20,19 +20,48 @@ interface SavedSolution {
   createdAt: string;
 }
 
+interface UsageData {
+  plan: "free" | "pro" | "max";
+  usageCount: number;
+  limit: number;
+  remaining: number;
+  canSolve: boolean;
+}
+
 export default function SolveDashboard() {
   const { isSignedIn, isLoaded } = useAuth();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("image");
   const [selectedSolution, setSelectedSolution] = useState<SavedSolution | null>(null);
   const [refreshSidebar, setRefreshSidebar] = useState(0);
+  const [usageData, setUsageData] = useState<UsageData | null>(null);
+  const [isLoadingUsage, setIsLoadingUsage] = useState(true);
+
+  // Fetch user usage data
+  useEffect(() => {
+    const fetchUsage = async () => {
+      if (isSignedIn) {
+        try {
+          const response = await fetch("/api/user/usage");
+          const data = await response.json();
+          setUsageData(data);
+        } catch (error) {
+          console.error("Error fetching usage:", error);
+        } finally {
+          setIsLoadingUsage(false);
+        }
+      }
+    };
+
+    fetchUsage();
+  }, [isSignedIn, refreshSidebar]); // Refreshes when refreshSidebar changes
 
   // Redirect if not signed in
   if (isLoaded && !isSignedIn) {
     redirect("/");
   }
 
-  if (!isLoaded) {
+  if (!isLoaded || isLoadingUsage) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-gray-900 dark:via-slate-900 dark:to-zinc-900 flex items-center justify-center">
         <div className="text-center">
@@ -57,6 +86,11 @@ export default function SolveDashboard() {
   };
 
   const handleSolutionSaved = () => {
+    setRefreshSidebar(prev => prev + 1);
+  };
+
+  const handleLimitReached = () => {
+    // Refresh usage data when limit is reached
     setRefreshSidebar(prev => prev + 1);
   };
 
@@ -92,6 +126,29 @@ export default function SolveDashboard() {
             <p className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 bg-clip-text text-transparent">
               Ready to solve some math problems? ✨
             </p>
+
+            {/* Usage Indicator */}
+            {usageData && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 }}
+                className="mt-6 inline-block"
+              >
+                <div className={`px-6 py-3 rounded-full font-bold text-base ${
+                  usageData.plan === "max"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-500"
+                    : usageData.plan === "pro"
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500"
+                    : "bg-gradient-to-r from-slate-600 to-gray-600"
+                } text-white shadow-lg`}>
+                  {usageData.limit === -1
+                    ? `✨ Unlimited Problems (${usageData.plan.toUpperCase()} Plan)`
+                    : `📊 ${usageData.usageCount}/${usageData.limit} Problems Used This Month`
+                  }
+                </div>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Input Method Selector */}
@@ -125,6 +182,9 @@ export default function SolveDashboard() {
                   onSolutionSaved={handleSolutionSaved}
                   selectedSolution={selectedSolution}
                   onBackToDashboard={handleBackToDashboard}
+                  canSolve={usageData?.canSolve ?? true}
+                  usageData={usageData}
+                  onLimitReached={handleLimitReached}
                 />
               </TabsContent>
 
@@ -134,6 +194,9 @@ export default function SolveDashboard() {
                   onSolutionSaved={handleSolutionSaved}
                   selectedSolution={selectedSolution}
                   onBackToDashboard={handleBackToDashboard}
+                  canSolve={usageData?.canSolve ?? true}
+                  usageData={usageData}
+                  onLimitReached={handleLimitReached}
                 />
               </TabsContent>
             </Tabs>

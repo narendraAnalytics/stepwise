@@ -16,13 +16,24 @@ interface SavedSolution {
   createdAt: string;
 }
 
+interface UsageData {
+  plan: "free" | "pro" | "max";
+  usageCount: number;
+  limit: number;
+  remaining: number;
+  canSolve: boolean;
+}
+
 interface ImageUploadProps {
   onSolutionSaved?: () => void;
   selectedSolution?: SavedSolution | null;
   onBackToDashboard?: () => void;
+  canSolve?: boolean;
+  usageData?: UsageData | null;
+  onLimitReached?: () => void;
 }
 
-export default function ImageUpload({ onSolutionSaved, selectedSolution, onBackToDashboard }: ImageUploadProps) {
+export default function ImageUpload({ onSolutionSaved, selectedSolution, onBackToDashboard, canSolve = true, usageData, onLimitReached }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -171,7 +182,18 @@ export default function ImageUpload({ onSolutionSaved, selectedSolution, onBackT
           onSolutionSaved();
         }
       } else {
-        toast.error(data.error || "Failed to solve problem");
+        // Check if limit was reached
+        if (response.status === 403 && data.limitReached) {
+          toast.error("🚀 Monthly limit reached! Please upgrade your plan to continue solving.", {
+            duration: 5000,
+          });
+          // Trigger usage refresh
+          if (onLimitReached) {
+            onLimitReached();
+          }
+        } else {
+          toast.error(data.error || "Failed to solve problem");
+        }
       }
     } catch (error) {
       console.error('Error solving problem:', error);
@@ -289,28 +311,28 @@ export default function ImageUpload({ onSolutionSaved, selectedSolution, onBackT
           >
             {!uploadedImage ? (
           <motion.div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
+            onDragOver={canSolve ? handleDragOver : undefined}
+            onDragLeave={canSolve ? handleDragLeave : undefined}
+            onDrop={canSolve ? handleDrop : undefined}
             className={`
               relative border-4 border-dashed rounded-3xl p-12 md:p-20
-              transition-all duration-300 cursor-pointer
+              transition-all duration-300 ${canSolve ? "cursor-pointer" : "cursor-not-allowed opacity-60"}
               bg-gradient-to-br from-white/50 to-purple-50/30 dark:from-gray-800/50 dark:to-purple-900/20
               backdrop-blur-lg shadow-2xl
-              ${isDragging
+              ${isDragging && canSolve
                 ? "border-purple-500 bg-purple-100/50 dark:bg-purple-900/30 scale-105"
                 : "border-purple-300/50 hover:border-purple-400 hover:scale-102"
               }
             `}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={canSolve ? { scale: 1.02 } : {}}
+            whileTap={canSolve ? { scale: 0.98 } : {}}
           >
             <input
               type="file"
               accept="image/*"
               onChange={handleFileChange}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              disabled={isUploading}
+              disabled={isUploading || !canSolve}
             />
 
             <div className="text-center">
@@ -364,6 +386,27 @@ export default function ImageUpload({ onSolutionSaved, selectedSolution, onBackT
                   </div>
                 </>
               )}
+
+              {/* Overlay message when can't solve */}
+              {!canSolve && usageData && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-3xl z-10">
+                  <div className="text-center p-8">
+                    <p className="text-2xl font-bold text-white mb-4">🚀 Monthly Limit Reached!</p>
+                    <p className="text-white mb-6">
+                      You've used {usageData.usageCount}/{usageData.limit} problems. Upgrade to continue!
+                    </p>
+                    <a href="/#pricing">
+                      <motion.button
+                        className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        ✨ View Pricing Plans
+                      </motion.button>
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         ) : (
@@ -402,10 +445,12 @@ export default function ImageUpload({ onSolutionSaved, selectedSolution, onBackT
 
               <motion.button
                 onClick={handleSolve}
-                disabled={isSolving}
-                className="relative w-full px-10 py-5 rounded-full font-bold text-lg overflow-hidden group"
-                whileHover={{ scale: 1.05, y: -3 }}
-                whileTap={{ scale: 0.95 }}
+                disabled={isSolving || !canSolve}
+                className={`relative w-full px-10 py-5 rounded-full font-bold text-lg overflow-hidden group ${
+                  !canSolve ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                whileHover={canSolve ? { scale: 1.05, y: -3 } : {}}
+                whileTap={canSolve ? { scale: 0.95 } : {}}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
                 <motion.div
@@ -447,6 +492,32 @@ export default function ImageUpload({ onSolutionSaved, selectedSolution, onBackT
                   )}
                 </span>
               </motion.button>
+
+              {/* Upgrade Message when limit reached */}
+              {!canSolve && usageData && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-6 p-6 bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-yellow-500/20 border-2 border-orange-400 rounded-2xl"
+                >
+                  <p className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center gap-2">
+                    <span className="text-2xl">🚀</span>
+                    You've reached your monthly limit!
+                  </p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                    You've used {usageData.usageCount}/{usageData.limit} problems this month. Upgrade to continue solving!
+                  </p>
+                  <a href="/#pricing">
+                    <motion.button
+                      className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:from-purple-600 hover:to-pink-600"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      ✨ Upgrade to Pro or Max Plan
+                    </motion.button>
+                  </a>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         )}

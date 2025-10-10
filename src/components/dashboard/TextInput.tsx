@@ -15,10 +15,21 @@ interface SavedSolution {
   createdAt: string;
 }
 
+interface UsageData {
+  plan: "free" | "pro" | "max";
+  usageCount: number;
+  limit: number;
+  remaining: number;
+  canSolve: boolean;
+}
+
 interface TextInputProps {
   onSolutionSaved?: () => void;
   selectedSolution?: SavedSolution | null;
   onBackToDashboard?: () => void;
+  canSolve?: boolean;
+  usageData?: UsageData | null;
+  onLimitReached?: () => void;
 }
 
 const mathSymbols = [
@@ -50,7 +61,7 @@ const mathSymbols = [
   { symbol: "°", label: "Degree" },
 ];
 
-export default function TextInput({ onSolutionSaved, selectedSolution, onBackToDashboard }: TextInputProps) {
+export default function TextInput({ onSolutionSaved, selectedSolution, onBackToDashboard, canSolve = true, usageData, onLimitReached }: TextInputProps) {
   const [problem, setProblem] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [isSolving, setIsSolving] = useState(false);
@@ -128,7 +139,18 @@ export default function TextInput({ onSolutionSaved, selectedSolution, onBackToD
           onSolutionSaved();
         }
       } else {
-        toast.error(data.error || "Failed to solve problem");
+        // Check if limit was reached
+        if (response.status === 403 && data.limitReached) {
+          toast.error("🚀 Monthly limit reached! Please upgrade your plan to continue solving.", {
+            duration: 5000,
+          });
+          // Trigger usage refresh
+          if (onLimitReached) {
+            onLimitReached();
+          }
+        } else {
+          toast.error(data.error || "Failed to solve problem");
+        }
       }
     } catch (error) {
       console.error('Error solving problem:', error);
@@ -327,9 +349,33 @@ Examples:
 1. 2x + 5 = 15
 2. x² + 3x + 2 = 0
 3. √(16) + 2³"
-            className="w-full h-48 p-6 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-2xl border-2 border-orange-300/50 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 outline-none transition-all duration-300 resize-none text-lg font-medium text-gray-800 dark:text-gray-200 placeholder:text-gray-400"
+            className={`w-full h-48 p-6 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-2xl border-2 border-orange-300/50 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 outline-none transition-all duration-300 resize-none text-lg font-medium text-gray-800 dark:text-gray-200 placeholder:text-gray-400 ${
+              !canSolve ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             style={{ fontFamily: "monospace" }}
+            disabled={!canSolve}
           />
+
+          {/* Overlay message when can't solve */}
+          {!canSolve && usageData && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-2xl z-10">
+              <div className="text-center p-6">
+                <p className="text-xl font-bold text-white mb-3">🚀 Monthly Limit Reached!</p>
+                <p className="text-white mb-4 text-sm">
+                  You've used {usageData.usageCount}/{usageData.limit} problems. Upgrade to continue!
+                </p>
+                <a href="/#pricing">
+                  <motion.button
+                    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg text-sm"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    ✨ View Pricing Plans
+                  </motion.button>
+                </a>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Action Buttons */}
@@ -345,11 +391,13 @@ Examples:
 
           <motion.button
             onClick={handleSolve}
-            className="relative flex-[2] px-10 py-4 rounded-full font-bold text-lg overflow-hidden group"
-            whileHover={{ scale: 1.05, y: -3 }}
-            whileTap={{ scale: 0.95 }}
+            className={`relative flex-[2] px-10 py-4 rounded-full font-bold text-lg overflow-hidden group ${
+              !canSolve || problem.trim().length === 0 || isSolving ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            whileHover={canSolve && problem.trim().length > 0 && !isSolving ? { scale: 1.05, y: -3 } : {}}
+            whileTap={canSolve && problem.trim().length > 0 && !isSolving ? { scale: 0.95 } : {}}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            disabled={problem.trim().length === 0 || isSolving}
+            disabled={problem.trim().length === 0 || isSolving || !canSolve}
           >
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500"

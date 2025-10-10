@@ -3,18 +3,71 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { solutionsTable, usersTable } from "@/db/schema";
-import { eq, count } from "drizzle-orm";
+import { eq, count, and, gte, sql } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   try {
     // Get authenticated user
-    const { userId: clerkId } = await auth();
+    const { userId: clerkId, has } = await auth();
 
     if (!clerkId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
+    }
+
+    // Check user's plan and usage limits
+    const hasMaxPlan = has({ plan: "max" });
+    const hasProPlan = has({ plan: "pro" });
+
+    let limit = 2; // Free plan limit
+    if (hasMaxPlan) {
+      limit = -1; // Unlimited
+    } else if (hasProPlan) {
+      limit = 8;
+    }
+
+    // Get user from database
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.clerkId, clerkId))
+      .limit(1);
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check monthly usage if not unlimited
+    if (limit !== -1) {
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const [usageResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(solutionsTable)
+        .where(
+          and(
+            eq(solutionsTable.userId, user.id),
+            gte(solutionsTable.createdAt, currentMonthStart)
+          )
+        );
+
+      const usageCount = Number(usageResult?.count || 0);
+
+      if (usageCount >= limit) {
+        return NextResponse.json(
+          {
+            error: `You've reached your monthly limit of ${limit} problems. Please upgrade to continue solving!`,
+            limitReached: true
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await request.json();
@@ -95,20 +148,6 @@ Format your response with clear problem numbers (e.g., "**Problem 1:**", "**Prob
     }
 
     const solution = response.text;
-
-    // Get user from database
-    const [user] = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.clerkId, clerkId))
-      .limit(1);
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
 
     // Count existing solutions for this user to get next problem number
     const [solutionCount] = await db
