@@ -64,6 +64,11 @@ export default function TextInput({ onSolutionSaved, selectedSolution, onBackToD
     if (selectedSolution && selectedSolution.problemType === "text") {
       // Reset view first to ensure re-render
       setShowSolution(false);
+      setSolution(null);
+      setProblemNumber(null);
+      setProblem("");
+      setCharCount(0);
+
       // Use setTimeout to ensure state update completes before showing solution
       setTimeout(() => {
         setSolution(selectedSolution.solution);
@@ -71,9 +76,9 @@ export default function TextInput({ onSolutionSaved, selectedSolution, onBackToD
         setProblemNumber(selectedSolution.problemNumber);
         setCharCount(selectedSolution.problemContent.length);
         setShowSolution(true);
-      }, 0);
+      }, 50);
     }
-  }, [selectedSolution?.id, selectedSolution?.problemNumber, selectedSolution?.solution]);
+  }, [selectedSolution?.id, selectedSolution?.problemNumber]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -209,7 +214,7 @@ export default function TextInput({ onSolutionSaved, selectedSolution, onBackToD
                     }
 
                     // Check if line is Final Answer (special bright gradient)
-                    if (cleanLine.match(/^Final Answer:/i)) {
+                    if (cleanLine.match(/^(\d+\.\s*)?Final Answer:/i)) {
                       return (
                         <h5 key={index} className="text-2xl font-bold bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 bg-clip-text text-transparent mt-6">
                           {cleanLine}
@@ -218,7 +223,7 @@ export default function TextInput({ onSolutionSaved, selectedSolution, onBackToD
                     }
 
                     // Check if line is a section header (Problem Statement, Step-by-Step Solution, etc.)
-                    if (cleanLine.match(/^(Problem Statement|Step-by-Step Solution|Quick Tip|Problem Number & Statement|Key Concept|Practice Tip):/i)) {
+                    if (cleanLine.match(/^(\d+\.\s*)?(Problem Statement|Step-by-Step Solution|Quick Tip|Problem Number & Statement|Key Concept|Practice Tip):/i)) {
                       return (
                         <h5 key={index} className="text-2xl font-bold bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent mt-6">
                           {cleanLine}

@@ -27,7 +27,7 @@ export default function DashboardNavbar() {
               />
               <motion.div
                 whileHover={{ rotate: [0, -5, 5, -5, 0] }}
-                transition={{ duration: 0.5 }}
+                transition={{ type: "tween", duration: 0.5 }}
               >
                 <Image
                   src="/images/stepwiselogo.png"

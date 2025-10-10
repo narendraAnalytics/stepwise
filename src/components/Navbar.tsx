@@ -12,27 +12,27 @@ import { useRouter } from "next/navigation";
 const navLinks = [
   {
     name: "Home",
-    href: "/",
+    href: "/#hero",
     gradient: "from-cyan-400 via-blue-500 to-purple-600",
     icon: "🏠",
   },
   {
     name: "Solve Problem",
-    href: "/solve",
+    href: "/#solve-problem",
     gradient: "from-blue-500 via-cyan-500 to-teal-500",
     icon: "∑",
   },
   {
-    name: "History",
-    href: "/history",
+    name: "Practice",
+    href: "/#practice",
     gradient: "from-purple-500 via-violet-500 to-indigo-500",
-    icon: "📚",
+    icon: "🎯",
   },
   {
-    name: "Practice",
-    href: "/practice",
+    name: "Pricing",
+    href: "/#pricing",
     gradient: "from-orange-500 via-amber-500 to-yellow-500",
-    icon: "✏️",
+    icon: "💳",
   },
   {
     name: "About",
@@ -87,7 +87,7 @@ export default function Navbar() {
               />
               <motion.div
                 whileHover={{ rotate: [0, -5, 5, -5, 0] }}
-                transition={{ duration: 0.5 }}
+                transition={{ type: "tween", duration: 0.5 }}
               >
                 <Image
                   src="/images/stepwiselogo.png"
@@ -131,6 +131,7 @@ export default function Navbar() {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
+                whileHover="hover"
               >
                 {/* Animated icon/symbol on hover */}
                 <motion.div
@@ -139,7 +140,7 @@ export default function Navbar() {
                   whileTap={{ scale: 0.9 }}
                   transition={{
                     scale: { type: "spring", stiffness: 400, damping: 10 },
-                    rotate: { duration: 0.5 }
+                    rotate: { type: "tween", duration: 0.5 }
                   }}
                 >
                   {/* Glowing effect behind icon */}
@@ -175,9 +176,12 @@ export default function Navbar() {
                     text-sm font-bold
                     bg-gradient-to-r ${link.gradient}
                     bg-clip-text text-transparent
-                    opacity-0
                   `}
-                  whileHover={{ opacity: 1, y: -2 }}
+                  variants={{
+                    hover: { opacity: 1, y: -2 },
+                  }}
+                  initial={{ opacity: 0, y: 0 }}
+                  animate={{ opacity: 0, y: 0 }}
                   transition={{ duration: 0.2 }}
                 >
                   {link.name}
@@ -188,9 +192,12 @@ export default function Navbar() {
                   className={`
                     absolute -bottom-2 left-0 right-0 h-1 rounded-full
                     bg-gradient-to-r ${link.gradient}
-                    opacity-0
                   `}
-                  whileHover={{ opacity: 1, scaleX: 1.2 }}
+                  variants={{
+                    hover: { opacity: 1, scaleX: 1.2 },
+                  }}
+                  initial={{ opacity: 0, scaleX: 1 }}
+                  animate={{ opacity: 0, scaleX: 1 }}
                   transition={{ duration: 0.3 }}
                 />
               </motion.div>
@@ -245,7 +252,7 @@ export default function Navbar() {
                 <span className="relative z-10 flex items-center gap-2 font-extrabold">
                   <motion.span
                     whileHover={{ rotate: [0, 10, -10, 10, 0] }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ type: "tween", duration: 0.5 }}
                     className="text-xl filter-none"
                     style={{ WebkitTextFillColor: 'initial' }}
                   >
@@ -301,7 +308,7 @@ export default function Navbar() {
                   transition={isRedirecting ? {
                     rotate: { duration: 0.6, repeat: Infinity, ease: "linear" },
                     scale: { duration: 0.6, repeat: Infinity, ease: "easeInOut" }
-                  } : { duration: 0.5 }}
+                  } : { type: "tween", duration: 0.5 }}
                   whileHover={!isRedirecting ? { rotate: [0, 10, -10, 10, 0] } : {}}
                   className="text-xl filter-none"
                   style={{ WebkitTextFillColor: 'initial' }}

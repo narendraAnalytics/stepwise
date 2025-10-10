@@ -69,7 +69,7 @@ export default function DashboardStats() {
             <motion.div
               className="relative mb-4"
               whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.2 }}
-              transition={{ duration: 0.5 }}
+              transition={{ type: "tween", duration: 0.5 }}
             >
               <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
                 <Icon className="w-7 h-7 text-white" strokeWidth={2.5} />

@@ -46,7 +46,14 @@ export default function SolveDashboard() {
   }
 
   const handleSolutionSelect = (solution: SavedSolution) => {
-    setSelectedSolution(solution);
+    // Switch to the correct tab based on problem type (image or text)
+    setActiveTab(solution.problemType);
+
+    // Clear first, then set - forces re-render for each new solution
+    setSelectedSolution(null);
+    setTimeout(() => {
+      setSelectedSolution(solution);
+    }, 0);
   };
 
   const handleSolutionSaved = () => {
@@ -114,6 +121,7 @@ export default function SolveDashboard() {
 
               <TabsContent value="image" className="mt-8">
                 <ImageUpload
+                  key={selectedSolution?.id || 'empty'}
                   onSolutionSaved={handleSolutionSaved}
                   selectedSolution={selectedSolution}
                   onBackToDashboard={handleBackToDashboard}
@@ -122,6 +130,7 @@ export default function SolveDashboard() {
 
               <TabsContent value="text" className="mt-8">
                 <TextInput
+                  key={selectedSolution?.id || 'empty'}
                   onSolutionSaved={handleSolutionSaved}
                   selectedSolution={selectedSolution}
                   onBackToDashboard={handleBackToDashboard}

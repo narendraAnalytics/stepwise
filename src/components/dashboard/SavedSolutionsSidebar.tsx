@@ -99,7 +99,10 @@ export default function SavedSolutionsSidebar({ onSelectSolution, refreshTrigger
       </div>
 
       {/* Solutions List */}
-      <div className="overflow-y-auto h-full pb-24 px-2 pt-4">
+      <div className="overflow-y-auto overflow-x-hidden h-full pb-24 px-2 pt-4" style={{
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#a855f7 #f3e8ff'
+      }}>
         {isLoading ? (
           <div className="flex flex-col items-center justify-center gap-2 py-8">
             <div className="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
@@ -113,43 +116,41 @@ export default function SavedSolutionsSidebar({ onSelectSolution, refreshTrigger
             </p>
           </div>
         ) : (
-          <div className="h-full pb-24 px-2 pt-4">
-            {solutions.map((solution, index) => (
-              <motion.button
-                key={solution.id}
-                onClick={() => handleSolutionClick(solution)}
-                className={`
-                  relative w-full aspect-square rounded-xl font-bold text-sm mb-2
-                  transition-all duration-300 shadow-lg hover:shadow-2xl
-                  ${selectedNumber === solution.problemNumber
-                    ? 'bg-gradient-to-br from-purple-500 via-pink-500 to-fuchsia-500 text-white scale-110'
-                    : 'bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 text-purple-700 dark:text-purple-300'
-                  }
-                `}
-                whileHover={{ scale: 1.15, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <span className="relative z-10">{solution.problemNumber}</span>
-                {selectedNumber === solution.problemNumber && (
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-yellow-400/30 to-orange-400/30 rounded-xl"
-                    animate={{
-                      scale: [1, 1.2, 1],
-                      opacity: [0.5, 0.8, 0.5],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  />
-                )}
-              </motion.button>
-            ))}
-          </div>
+          solutions.map((solution, index) => (
+            <motion.button
+              key={solution.id}
+              onClick={() => handleSolutionClick(solution)}
+              className={`
+                relative w-full aspect-square rounded-xl font-bold text-sm mb-2
+                transition-all duration-300 shadow-lg hover:shadow-2xl
+                ${selectedNumber === solution.problemNumber
+                  ? 'bg-gradient-to-br from-purple-500 via-pink-500 to-fuchsia-500 text-white scale-110'
+                  : 'bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 text-purple-700 dark:text-purple-300'
+                }
+              `}
+              whileHover={{ scale: 1.15, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <span className="relative z-10">{solution.problemNumber}</span>
+              {selectedNumber === solution.problemNumber && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-yellow-400/30 to-orange-400/30 rounded-xl"
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.5, 0.8, 0.5],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              )}
+            </motion.button>
+          ))
         )}
       </div>
     </motion.div>

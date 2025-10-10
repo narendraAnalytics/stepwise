@@ -74,7 +74,7 @@ export default function HeroSection() {
   ];
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-20 overflow-hidden">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-20 overflow-hidden">
       {/* Background Carousel */}
       <div className="absolute inset-0 w-full h-full z-0">
         <div className="embla w-full h-full overflow-hidden" ref={emblaRef}>
@@ -205,7 +205,7 @@ export default function HeroSection() {
                 <span className="relative z-10 flex items-center gap-3 font-extrabold">
                   <motion.span
                     whileHover={{ rotate: [0, 10, -10, 10, 0], scale: 1.2 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ type: "tween", duration: 0.5 }}
                     className="text-2xl filter-none"
                     style={{ WebkitTextFillColor: "initial" }}
                   >
@@ -261,7 +261,7 @@ export default function HeroSection() {
                   transition={isRedirecting ? {
                     rotate: { duration: 0.6, repeat: Infinity, ease: "linear" },
                     scale: { duration: 0.6, repeat: Infinity, ease: "easeInOut" }
-                  } : { duration: 0.5 }}
+                  } : { type: "tween", duration: 0.5 }}
                   whileHover={!isRedirecting ? { rotate: [0, 10, -10, 10, 0], scale: 1.2 } : {}}
                   className="text-2xl filter-none"
                   style={{ WebkitTextFillColor: "initial" }}
