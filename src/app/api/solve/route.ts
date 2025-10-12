@@ -23,8 +23,9 @@ export async function POST(request: NextRequest) {
     let hasProPlan = has({ plan: "pro plan" }) || has({ plan: "pro" });
 
     // Check sessionClaims for Clerk Billing subscriptions
-    if (!hasMaxPlan && !hasProPlan && sessionClaims?.__billing?.subscriptions) {
-      const subscriptions = sessionClaims.__billing.subscriptions as any[];
+    const billing = sessionClaims as any;
+    if (!hasMaxPlan && !hasProPlan && billing?.__billing?.subscriptions) {
+      const subscriptions = billing.__billing.subscriptions as any[];
       const activeSubscription = subscriptions.find(
         (sub: any) => sub.status === "active" || sub.status === "trialing"
       );
