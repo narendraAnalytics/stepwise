@@ -2,7 +2,9 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import SolveProblemSection from "@/components/SolveProblemSection";
 import PracticeSection from "@/components/PracticeSection";
+import AboutSection from "@/components/AboutSection";
 import PricingSection from "@/components/PricingSection";
+import Footer from "@/components/Footer";
 import { syncUser } from "@/lib/syncUser";
 
 export default async function Home() {
@@ -16,6 +18,8 @@ export default async function Home() {
       <SolveProblemSection />
       <PracticeSection />
       <PricingSection />
+      <AboutSection />
+      <Footer />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { eq, count, and, gte, sql } from "drizzle-orm";
 export async function POST(request: NextRequest) {
   try {
     // Get authenticated user
-    const { userId: clerkId, has } = await auth();
+    const { userId: clerkId, has, sessionClaims } = await auth();
 
     if (!clerkId) {
       return NextResponse.json(
@@ -18,8 +18,42 @@ export async function POST(request: NextRequest) {
     }
 
     // Check user's plan and usage limits
-    const hasMaxPlan = has({ plan: "max" });
-    const hasProPlan = has({ plan: "pro" });
+    // Check for exact plan names from Clerk Dashboard
+    let hasMaxPlan = has({ plan: "Max Plan" }) || has({ plan: "max" });
+    let hasProPlan = has({ plan: "pro plan" }) || has({ plan: "pro" });
+
+    // Check sessionClaims for Clerk Billing subscriptions
+    if (!hasMaxPlan && !hasProPlan && sessionClaims?.__billing?.subscriptions) {
+      const subscriptions = sessionClaims.__billing.subscriptions as any[];
+      const activeSubscription = subscriptions.find(
+        (sub: any) => sub.status === "active" || sub.status === "trialing"
+      );
+
+      if (activeSubscription?.plan) {
+        const planName = activeSubscription.plan.toLowerCase();
+        // Match "Max Plan" or "max"
+        if (planName === "max plan" || planName === "max") {
+          hasMaxPlan = true;
+        // Match "pro plan" or "pro"
+        } else if (planName === "pro plan" || planName === "pro") {
+          hasProPlan = true;
+        }
+      }
+    }
+
+    // Also check user's public metadata (for manual assignment)
+    if (!hasMaxPlan && !hasProPlan) {
+      const { clerkClient: getClerkClient } = await import("@clerk/nextjs/server");
+      const client = await getClerkClient();
+      const user = await client.users.getUser(clerkId);
+      const userPlan = user.publicMetadata?.plan as string | undefined;
+
+      if (userPlan === "max" || userPlan === "Max Plan") {
+        hasMaxPlan = true;
+      } else if (userPlan === "pro" || userPlan === "pro plan") {
+        hasProPlan = true;
+      }
+    }
 
     let limit = 2; // Free plan limit
     if (hasMaxPlan) {

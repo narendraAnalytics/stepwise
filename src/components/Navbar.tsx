@@ -36,7 +36,7 @@ const navLinks = [
   },
   {
     name: "About",
-    href: "/about",
+    href: "/#about",
     gradient: "from-pink-500 via-fuchsia-500 to-purple-600",
     icon: "ℹ️",
   },
@@ -64,6 +64,27 @@ export default function Navbar() {
     };
 
     fetchUserPlan();
+
+    // Poll for plan changes every 5 seconds to detect Clerk Billing updates
+    const intervalId = setInterval(() => {
+      if (isSignedIn) {
+        fetchUserPlan();
+      }
+    }, 5000);
+
+    // Refresh plan when user returns to the app (after completing payment)
+    const handleVisibilityChange = () => {
+      if (!document.hidden && isSignedIn) {
+        fetchUserPlan();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [isSignedIn]);
 
   // Monitor authentication completion
